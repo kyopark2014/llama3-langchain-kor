@@ -168,7 +168,12 @@ memory_chain.chat_memory.add_ai_message(msg)
 
 ## 실행결과
 
+입력창에 "서울 여행하는 방법 알려줘"로 입력후 결과를 확인합니다.
+
 ![image](https://github.com/kyopark2014/llama3-langchain-kor/assets/52392004/7e01dc96-5f27-400e-a25f-b094e245e391)
+
+[error_code.pdf](./contents/error_code.pdf)을 다운받은 후에 업로드를 하고 결과를 확인합니다.
+
 
 ## 리소스 정리하기 
 
