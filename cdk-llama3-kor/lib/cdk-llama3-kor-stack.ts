@@ -15,7 +15,7 @@ import * as apigatewayv2 from 'aws-cdk-lib/aws-apigatewayv2';
 const region = process.env.CDK_DEFAULT_REGION;    
 const debug = false;
 const stage = 'dev';
-const endpoint_nmae = 'jumpstart-dft-meta-textgeneration-llama-3-8b-instruct'
+const endpoint_name = 'jumpstart-dft-meta-textgeneration-llama-3-8b-instruct'
 const s3_prefix = 'docs';
 const projectName = `llama3-langchain-kor`; 
 
@@ -406,7 +406,7 @@ export class CdkLlama3KorStack extends cdk.Stack {
       role: roleLambdaWebsocket,
       environment: {
         bedrock_region: bedrock_region,
-        endpoint_nmae: endpoint_nmae,
+        endpoint_name: endpoint_name,
         s3_bucket: s3Bucket.bucketName,
         s3_prefix: s3_prefix,
         path: 'https://'+distribution.domainName+'/',   
