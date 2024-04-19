@@ -417,7 +417,7 @@ def getResponse(connectionId, jsonBody):
 
     # create memory
     if userId in map_chain:  
-        chat_memory = map_chain[userId]
+        memory_chain = map_chain[userId]
         print('memory_chain exist. reuse it!')
     else: 
         memory_chain = ConversationBufferWindowMemory(memory_key="chat_history", output_key='answer', return_messages=True, k=3)
@@ -448,8 +448,6 @@ def getResponse(connectionId, jsonBody):
             if convType == "normal":
                 msg = general_conversation(text)                
                 print('msg: ', msg)         
-                msg = str(msg)       
-                print('str(msg): ', msg)
             
             memory_chain.chat_memory.add_user_message(text)
             memory_chain.chat_memory.add_ai_message(msg)
