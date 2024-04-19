@@ -392,24 +392,45 @@ def load_chatHistory(userId, allowTime, chat_memory):
 
             chat_memory.save_context({"input": text}, {"output": msg})    
 
-def general_conversation(query):
-    prompt_template = """\n\nUser: 다음 텍스트를 요약해서 500자 이내로 설명하세오.
+def RAG(context, query):
+    prompt_template = """Use the following pieces of context to answer the question at the end.
 
-    {text}
-        
-    Assistant:"""        
+    {context}
+
+    Question: {question}
+    Answer:"""   
     
     PROMPT = PromptTemplate(
         template=prompt_template, 
-        input_variables=["text"]
+        input_variables=["context", "question"]
     )
                 
     chain = load_qa_chain(
         llm=llm,                    
         prompt=PROMPT,
     )
+    
+    msg = chain({"input_documents": context, "question": query}, return_only_outputs=True)
                 
     msg = chain.run(query)
+    print('msg: ', msg)
+    
+    return msg
+
+from langchain.chains.llm import LLMChain
+def general_conversation(query):
+    prompt_template = """Write a concise summary of the following:
+    "{text}"
+    CONCISE SUMMARY:"""   
+    
+    PROMPT = PromptTemplate(
+        template=prompt_template, 
+        input_variables=["text"]
+    )
+                
+    llm_chain = LLMChain(llm=llm, prompt=PROMPT)
+    
+    msg = llm_chain({"text": query}, return_only_outputs=True)
     print('msg: ', msg)
     
     return msg
