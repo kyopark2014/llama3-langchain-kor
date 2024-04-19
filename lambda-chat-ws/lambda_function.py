@@ -95,7 +95,7 @@ llm = SagemakerEndpoint(
     content_handler = content_handler
 )
 
-map_chain = dict() 
+map = dict() 
 MSG_LENGTH = 100
 
 # load documents from s3 for pdf and txt
@@ -384,7 +384,7 @@ def getResponse(connectionId, jsonBody):
     global enableConversationMode  # debug
 
     # create memory
-    if userId in map_chain:  
+    if userId in map:  
         chat_memory = map[userId]
         print('chat_memory exist. reuse it!')
     else: 
