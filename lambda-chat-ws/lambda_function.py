@@ -392,6 +392,28 @@ def load_chatHistory(userId, allowTime, chat_memory):
 
             chat_memory.save_context({"input": text}, {"output": msg})    
 
+def general_conversation(query):
+    prompt_template = """\n\nUser: 다음 텍스트를 요약해서 500자 이내로 설명하세오.
+
+    {text}
+        
+    Assistant:"""        
+    
+    PROMPT = PromptTemplate(
+        template=prompt_template, 
+        input_variables=["text"]
+    )
+                
+    chain = load_qa_chain(
+        llm=llm,                    
+        prompt=PROMPT,
+    )
+                
+    msg = chain.run(query)
+    print('msg: ', msg)
+    
+    return msg
+    
 def getResponse(connectionId, jsonBody):
     print('jsonBody: ', jsonBody)
     
@@ -444,23 +466,7 @@ def getResponse(connectionId, jsonBody):
             msg  = "The chat memory was intialized in this session."
         else:            
             if convType == "normal":
-                prompt_template = """\n\nUser: 다음 텍스트를 요약해서 500자 이내로 설명하세오.
-
-                {text}
-        
-                Assistant:"""        
-    
-                PROMPT = PromptTemplate(
-                    template=prompt_template, 
-                    input_variables=["text"]
-                )
-                
-                chain = load_qa_chain(
-                    llm=llm,                    
-                    prompt=PROMPT,
-                )
-                
-                msg = chain.run(text)
+                msg = general_conversation(text)                
                 print('msg: ', msg)                
                                         
     elif type == 'document':
