@@ -57,6 +57,7 @@ class ContentHandler(LLMContentHandler):
     accepts = "application/json"
 
     def transform_input(self, prompt: str, model_kwargs: dict) -> bytes:
+        """
         input_str = json.dumps({
             "inputs" : 
             [
@@ -72,6 +73,22 @@ class ContentHandler(LLMContentHandler):
                 ]
             ],
             "parameters" : {**model_kwargs}})
+        """
+        input_str = json.dumps({
+            "inputs": """
+            <|begin_of_text|>
+                <|start_header_id|>system<|end_header_id|>\n\n
+                    answer the question in Korean<|eot_id|>
+                <|start_header_id|>user<|end_header_id|>\n\n
+                    서울 여행하는 방법 추천해줄래?<|eot_id|>
+                <|start_header_id|>assistant<|end_header_id|>\n\n""",
+            "parameters": {
+                "max_new_tokens": 1024,
+                "top_p": 0.9,
+                "temperature": 0.6,
+                "stop": "<|eot_id|>"
+            }
+        })
         return input_str.encode('utf-8')
       
     def transform_output(self, output: bytes) -> str:
@@ -85,7 +102,8 @@ client = boto3.client("sagemaker-runtime")
 parameters = {
     "max_new_tokens": 1024, 
     "top_p": 0.9, 
-    "temperature": 0.1
+    "temperature": 0.1,
+    "stop": "<|eot_id|>"
 } 
 
 llm = SagemakerEndpoint(
