@@ -156,25 +156,12 @@ def load_csv_document(s3_file_name):
 
     return docs
 
-def get_summary(texts):    
-    # check korean
-    pattern_hangul = re.compile('[\u3131-\u3163\uac00-\ud7a3]+') 
-    word_kor = pattern_hangul.search(str(texts))
-    print('word_kor: ', word_kor)
-    
-    if word_kor:
-        #prompt_template = """\n\nHuman: 다음 텍스트를 간결하게 요약하세오. 텍스트의 요점을 다루는 글머리 기호로 응답을 반환합니다.
-        prompt_template = """\n\nUser: 다음 텍스트를 요약해서 500자 이내로 설명하세오.
+def get_summary(texts):        
+    prompt_template = """\n\nUser: 다음 텍스트를 요약해서 500자 이내의 한국어로 설명하세오.
 
-        {text}
+    {text}
         
-        Assistant:"""        
-    else:         
-        prompt_template = """\n\nUser: Write a concise summary of the following:
-
-        {text}
-        
-        Assistant:"""
+    Assistant:"""        
     
     PROMPT = PromptTemplate(template=prompt_template, input_variables=["text"])
     chain = load_summarize_chain(llm, chain_type="stuff", prompt=PROMPT)
@@ -232,19 +219,6 @@ def getAllowTime():
 
     return timeStr
 
-def isKorean(text):
-    # check korean
-    pattern_hangul = re.compile('[\u3131-\u3163\uac00-\ud7a3]+')
-    word_kor = pattern_hangul.search(str(text))
-    # print('word_kor: ', word_kor)
-
-    if word_kor and word_kor != 'None':
-        print('Korean: ', word_kor)
-        return True
-    else:
-        print('Not Korean: ', word_kor)
-        return False
-
 def isTyping(connectionId, requestId):    
     msg_proceeding = {
         'request_id': requestId,
@@ -301,24 +275,11 @@ def sendErrorMessage(connectionId, requestId, msg):
     sendMessage(connectionId, errorMsg)    
 
 def get_summary(texts):    
-    # check korean
-    pattern_hangul = re.compile('[\u3131-\u3163\uac00-\ud7a3]+') 
-    word_kor = pattern_hangul.search(str(texts))
-    print('word_kor: ', word_kor)
-    
-    if word_kor:
-        #prompt_template = """\n\nHuman: 다음 텍스트를 간결하게 요약하세오. 텍스트의 요점을 다루는 글머리 기호로 응답을 반환합니다.
-        prompt_template = """\n\nUser: 다음 텍스트를 요약해서 500자 이내로 설명하세오.
+    prompt_template = """\n\nUser: 다음 텍스트를 요약해서 500자 이내의 한국어로 설명하세오.
 
-        {text}
+    {text}
         
-        Assistant:"""        
-    else:         
-        prompt_template = """\n\nUser: Write a concise summary of the following:
-
-        {text}
-        
-        Assistant:"""
+    Assistant:"""
     
     PROMPT = PromptTemplate(template=prompt_template, input_variables=["text"])
     chain = load_summarize_chain(llm, chain_type="stuff", prompt=PROMPT)
