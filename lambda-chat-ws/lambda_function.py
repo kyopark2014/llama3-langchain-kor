@@ -35,7 +35,9 @@ bedrock_region = os.environ.get('bedrock_region', 'us-west-2')
 path = os.environ.get('path')
 doc_prefix = s3_prefix+'/'
 endpoint_name = os.environ.get('endpoint_name')
-   
+
+aws_region = boto3.Session().region_name
+
 # websocket
 connection_url = os.environ.get('connection_url')
 client = boto3.client('apigatewaymanagementapi', endpoint_url=connection_url)
@@ -59,10 +61,11 @@ class ContentHandler(LLMContentHandler):
         return response_json["generated_text"]
 
 content_handler = ContentHandler()
-# aws_region = boto3.Session().region_name
-aws_region = 'us-west-2'
 
-client = boto3.client("sagemaker-runtime")
+client = boto3.client(
+    "sagemaker-runtime",
+    region_name=aws_region,
+)
 parameters = {
     "max_new_tokens": 1024, 
     "top_p": 0.9, 
@@ -72,7 +75,7 @@ parameters = {
 
 llm = SagemakerEndpoint(
     endpoint_name = endpoint_name, 
-    region_name = aws_region, 
+    region_name = "us-west-2", 
     model_kwargs = parameters,
     client = client,
     endpoint_kwargs={"CustomAttributes": "accept_eula=true"},
