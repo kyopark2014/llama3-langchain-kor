@@ -381,7 +381,7 @@ def RAG(context, query):
     return msg
 
 from langchain.chains.llm import LLMChain
-def general_conversation(query):
+def general_conversation2(query):
     prompt_template = """
     <|begin_of_text|>
         <|start_header_id|>system<|end_header_id|>\n\nAlways answer without emojis in Korean<|eot_id|>
@@ -398,7 +398,31 @@ def general_conversation(query):
     msg = llm_chain({"text": query}, return_only_outputs=True)
     
     return msg['text']
+
+
+def general_conversation(query, history):
+    prompt_template = """
+    <|begin_of_text|>
+        <|start_header_id|>system<|end_header_id|>\n\nAlways answer without emojis in Korean<|eot_id|>
+        <|start_header_id|>user<|end_header_id|>\n\n"
+        History: {chat_history}
+        
+        Question: {question}
+        
+        Answer:"<|eot_id|>
+        <|start_header_id|>assistant<|end_header_id|>\n\n"""
     
+    PROMPT = PromptTemplate(
+        template=prompt_template, 
+        input_variables=["chat_history", "question"]
+    )
+    
+    llm_chain = LLMChain(llm=llm, prompt=PROMPT)
+    
+    msg = llm_chain({"question": query, "chat_history": history}, return_only_outputs=True)
+    
+    return msg['text']
+
 def getResponse(connectionId, jsonBody):
     print('jsonBody: ', jsonBody)
     
@@ -449,7 +473,7 @@ def getResponse(connectionId, jsonBody):
             msg  = "The chat memory was intialized in this session."
         else:            
             if convType == "normal":
-                msg = general_conversation(text)                
+                msg = general_conversation(text, "")                
                 print('msg: ', msg)         
                 msg = str(msg)       
                 print('str(msg): ', msg)                
