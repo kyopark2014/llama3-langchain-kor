@@ -174,6 +174,8 @@ memory_chain.chat_memory.add_ai_message(msg)
 
 [error_code.pdf](./contents/error_code.pdf)을 다운받은 후에 업로드를 하고 결과를 확인합니다.
 
+![image](https://github.com/kyopark2014/llama3-langchain-kor/assets/52392004/1ccb3146-ab6f-42eb-9b4a-cfac498615a2)
+
 
 ## 리소스 정리하기 
 
