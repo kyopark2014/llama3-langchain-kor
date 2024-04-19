@@ -75,8 +75,9 @@ class ContentHandler(LLMContentHandler):
         return input_str.encode('utf-8')
       
     def transform_output(self, output: bytes) -> str:
-        response_json = json.loads(output.read().decode("utf-8"))
-        return response_json[0]["generation"]["content"]
+        response_json = json.loads(output.read().decode("utf-8"))        
+        print('response_json: ', response_json)
+        return response_json["generation"]["content"]
 
 content_handler = ContentHandler()
 aws_region = boto3.Session().region_name
