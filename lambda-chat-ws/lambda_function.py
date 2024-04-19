@@ -384,7 +384,7 @@ from langchain.chains.llm import LLMChain
 def general_conversation(query):
     prompt_template = """
     <|begin_of_text|>
-        <|start_header_id|>system<|end_header_id|>\n\nanswer the question in Korean<|eot_id|>
+        <|start_header_id|>system<|end_header_id|>\n\nAlways answer without emojis in Korean<|eot_id|>
         <|start_header_id|>user<|end_header_id|>\n\n"{text}"<|eot_id|>
         <|start_header_id|>assistant<|end_header_id|>\n\n"""
     
@@ -549,8 +549,7 @@ def lambda_handler(event, context):
                     msg = getResponse(connectionId, jsonBody)
                     print('result msg: ', msg)
                     
-                    #sendResultMessage(connectionId, requestId, msg)  
-                    sendResultMessage(connectionId, requestId, "답변입니다.")  
+                    sendResultMessage(connectionId, requestId, msg)  
                                         
                 except Exception:
                     err_msg = traceback.format_exc()
