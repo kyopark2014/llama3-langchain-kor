@@ -21,9 +21,10 @@ from langchain_core.prompts import MessagesPlaceholder, ChatPromptTemplate
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.memory import ConversationBufferWindowMemory
 from langchain.llms.sagemaker_endpoint import LLMContentHandler
-from langchain import SagemakerEndpoint
+from langchain_community.llms import SagemakerEndpoint
 from langchain.chains import ConversationChain
 from langchain.prompts import PromptTemplate
+from langchain.chains.question_answering import load_qa_chain
 
 s3 = boto3.client('s3')
 s3_bucket = os.environ.get('s3_bucket') # bucket name
@@ -75,13 +76,15 @@ class ContentHandler(LLMContentHandler):
             "parameters" : {**model_kwargs}})
         """
         input_str = json.dumps({
-            "inputs": """
-            <|begin_of_text|>
+            "inputs": 
+                """
+                <|begin_of_text|>
                 <|start_header_id|>system<|end_header_id|>\n\n
                     answer the question in Korean<|eot_id|>
                 <|start_header_id|>user<|end_header_id|>\n\n
                     서울 여행하는 방법 추천해줄래?<|eot_id|>
-                <|start_header_id|>assistant<|end_header_id|>\n\n""",
+                <|start_header_id|>assistant<|end_header_id|>\n\n
+                """,
             "parameters": {
                 "max_new_tokens": 1024,
                 "top_p": 0.9,
@@ -97,7 +100,9 @@ class ContentHandler(LLMContentHandler):
         return response_json["generated_text"]
 
 content_handler = ContentHandler()
-aws_region = boto3.Session().region_name
+# aws_region = boto3.Session().region_name
+aws_region = 'us-west-2'
+
 client = boto3.client("sagemaker-runtime")
 parameters = {
     "max_new_tokens": 1024, 
@@ -206,7 +211,7 @@ def get_summary(texts):
     
     PROMPT = PromptTemplate(template=prompt_template, input_variables=["text"])
     chain = load_summarize_chain(llm, chain_type="stuff", prompt=PROMPT)
-
+    
     docs = [
         Document(
             page_content=t
@@ -320,7 +325,7 @@ def sendErrorMessage(connectionId, requestId, msg):
     }
     print('error: ', json.dumps(errorMsg))
     sendMessage(connectionId, errorMsg)    
-    
+
 def get_summary(texts):    
     # check korean
     pattern_hangul = re.compile('[\u3131-\u3163\uac00-\ud7a3]+') 
@@ -434,8 +439,25 @@ def getResponse(connectionId, jsonBody):
             print('initiate the chat memory!')
             msg  = "The chat memory was intialized in this session."
         else:            
-            if convType == "normal":                                   
-                msg = conversation.predict(input=text)
+            if convType == "normal":
+                prompt_template = """\n\nUser: 다음 텍스트를 요약해서 500자 이내로 설명하세오.
+
+                {text}
+        
+                Assistant:"""        
+    
+                PROMPT = PromptTemplate(
+                    template=prompt_template, 
+                    input_variables=["text"]
+                )
+                
+                chain = load_qa_chain(
+                    llm=llm,                    
+                    prompt=PROMPT,
+                )
+                
+                msg = chain.run(text)
+                print('msg: ', msg)                
                                         
     elif type == 'document':
         isTyping(connectionId, requestId)
