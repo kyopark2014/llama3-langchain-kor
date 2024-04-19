@@ -2,7 +2,7 @@
 
 여기서는 LLM으로 Llama3를 이용하여 한국어 Chatbot을 만드는 것을 설명합니다. 개발은 LangChain을 활용하였습니다. 전체적인 Architecture는 아래와 같습니다.
 
-<img src="https://github.com/kyopark2014/llama3-langchain-kor/assets/52392004/76825d03-fde4-494f-85f1-8b50920edf77" width="800">
+<img src="./contents/llama3.png" width="800">
 
 ## 주요 구성
 
@@ -192,4 +192,4 @@ cd ~/environment/llama3-langchain-kor/cdk-llama3-korg/ && cdk destroy --all
 
 ## 결론
 
-LangChain을 이용하여 Llama3로 한국어 Chatbot을 만들었습니다. 현재까지 테스트시에는 Llama2에서는 전혀 지원되던 한국어가 괜찮은 성능으로 제공되고 있습니다. 추가 테스트를 통해 활용방안을 확인할 예정입니다.
+LangChain을 이용하여 Llama3로 한국어 Chatbot을 만들었습니다. Llama2에서는 지원하지 않던 한국어가 괜찮은 성능으로 제공되고 있으며, 문서 요약 성능도 우수한것으로 보여집니다. 추가 테스트를 통해 활용방안을 확인할 예정입니다.
