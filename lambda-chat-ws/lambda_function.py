@@ -40,7 +40,7 @@ aws_region = boto3.Session().region_name
 
 # websocket
 connection_url = os.environ.get('connection_url')
-client = boto3.client('apigatewaymanagementapi', endpoint_url=connection_url)
+ws_client = boto3.client('apigatewaymanagementapi', endpoint_url=connection_url)
 print('connection_url: ', connection_url)
 
 class ContentHandler(LLMContentHandler):
@@ -62,25 +62,29 @@ class ContentHandler(LLMContentHandler):
 
 content_handler = ContentHandler()
 
-client = boto3.client(
-    service_name="sagemaker-runtime",
-    region_name=aws_region,
-)
-parameters = {
-    "max_new_tokens": 1024, 
-    "top_p": 0.9, 
-    "temperature": 0.1,
-    "stop": "<|eot_id|>"
-} 
+def initiate_LLM():
+    sagemaker_client = boto3.client(
+        service_name="sagemaker-runtime",
+        region_name=aws_region,
+    )
+    parameters = {
+        "max_new_tokens": 1024, 
+        "top_p": 0.9, 
+        "temperature": 0.1,
+        "stop": "<|eot_id|>"
+    } 
 
-llm = SagemakerEndpoint(
-    endpoint_name = endpoint_name, 
-    region_name = "us-west-2", 
-    model_kwargs = parameters,
-    client = client,
-    endpoint_kwargs={"CustomAttributes": "accept_eula=true"},
-    content_handler = content_handler
-)
+    llm = SagemakerEndpoint(
+        endpoint_name = endpoint_name, 
+        region_name = "us-west-2", 
+        model_kwargs = parameters,
+        client = sagemaker_client,
+        endpoint_kwargs={"CustomAttributes": "accept_eula=true"},
+        content_handler = content_handler
+    )    
+    return llm
+
+llm = initiate_LLM()
 
 map = dict() 
 MSG_LENGTH = 100
@@ -262,7 +266,7 @@ def readStreamMsg(connectionId, requestId, stream):
     
 def sendMessage(id, body):
     try:
-        client.post_to_connection(
+        ws_client.post_to_connection( 
             ConnectionId=id, 
             Data=json.dumps(body)
         )
@@ -378,10 +382,6 @@ def RAG(context, query):
 
 from langchain.chains.llm import LLMChain
 def general_conversation(query):
-    #prompt_template = """Answer the following question in Korean.
-    #Question: "{text}"
-    #Answer:"""   
-    
     prompt_template = """
     <|begin_of_text|>
         <|start_header_id|>system<|end_header_id|>\n\nanswer the question in Korean<|eot_id|>
@@ -429,8 +429,6 @@ def getResponse(connectionId, jsonBody):
 
         allowTime = getAllowTime()
         load_chatHistory(userId, allowTime, chat_memory)
-    
-    #conversation = ConversationChain(llm=llm, verbose=True, memory=chat_memory)
     
     start = int(time.time())    
 
@@ -511,9 +509,9 @@ def getResponse(connectionId, jsonBody):
         'msg': {'S':msg}
     }
 
-    client = boto3.client('dynamodb')
+    dynamo_client = boto3.client('dynamodb')
     try:
-        resp =  client.put_item(TableName=callLogTableName, Item=item)
+        resp =  dynamo_client.put_item(TableName=callLogTableName, Item=item)
     except Exception:
         err_msg = traceback.format_exc()
         print('error message: ', err_msg)
