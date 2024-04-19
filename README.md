@@ -91,6 +91,68 @@ def general_conversation(query):
 msg = general_conversation(text)    
 ```
 
+### 대화 이력의 관리
+
+map_chain을 설정합니다. 
+
+```python
+map_chain = dict() 
+MSG_LENGTH = 100
+```
+
+event가 lambda에 전달될때에 userId를 추출하여 관련된 대화이력을 memory_chain에서 확인합니다. 없는 경우에는 LangChain의 ConversationBufferWindowMemory을 이용해 memory_chain을 설정합니다. 또한 DyanmoDB를 조회하여 이전 대화이력이 있는 경우에 로드 합니다.
+
+```python
+# create memory
+if userId in map_chain:  
+    memory_chain = map_chain[userId]
+    print('memory_chain exist. reuse it!')
+else: 
+    memory_chain = ConversationBufferWindowMemory(memory_key="chat_history", output_key='answer', return_messages=True, k=4)
+    map_chain[userId] = memory_chain
+    print('memory_chain does not exist. create new one!')
+
+    allowTime = getAllowTime()
+    load_chat_history(userId, allowTime)◊
+
+def load_chat_history(userId, allowTime):
+    dynamodb_client = boto3.client('dynamodb')
+    print('loading history.')
+
+    try: 
+        response = dynamodb_client.query(
+            TableName=callLogTableName,
+            KeyConditionExpression='user_id = :userId AND request_time > :allowTime',
+            ExpressionAttributeValues={
+                ':userId': {'S': userId},
+                ':allowTime': {'S': allowTime}
+            }
+        )
+        print('query result: ', response['Items'])
+    except Exception:
+        err_msg = traceback.format_exc()
+        print('error message: ', err_msg)                    
+        raise Exception ("Not able to request to DynamoDB")
+
+    for item in response['Items']:
+        text = item['body']['S']
+        msg = item['msg']['S']
+        type = item['type']['S']
+
+        if type == 'text':
+            memory_chain.chat_memory.add_user_message(text)
+            if len(msg) > MSG_LENGTH:
+                memory_chain.chat_memory.add_ai_message(msg[:MSG_LENGTH])                          
+            else:
+                memory_chain.chat_memory.add_ai_message(msg)
+```
+
+신규 대화 이력은 아래와 같이 저장합니다.
+
+```python
+memory_chain.chat_memory.add_user_message(text)
+memory_chain.chat_memory.add_ai_message(msg)
+```
 
 ## 직접 실습 해보기
 
