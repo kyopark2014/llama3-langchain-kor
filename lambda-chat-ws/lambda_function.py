@@ -493,7 +493,7 @@ def getResponse(connectionId, jsonBody):
 
             msg = get_summary(contexts)
             
-            memory_chain.chat_memory.add_user_message(text)
+            memory_chain.chat_memory.add_user_message(f"{object}에서 텍스트를 추출하세요.")
             memory_chain.chat_memory.add_ai_message(msg)
                 
     elapsed_time = int(time.time()) - start
