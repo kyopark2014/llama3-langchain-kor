@@ -1,16 +1,5 @@
-# llama3-langchain-rag
-It shows a sample architecture deploying RAG on Llama3 based on LangChain.
+# Llama3와 LangChain을 이용하여 한국어 Chatbot 만들기
 
+여기서는 LLM으로 Llama3를 이용하여 한국어 Chatbot을 만드는 것을 설명합니다. 개발은 LangChain을 활용하였습니다. 전체적인 Architecture는 아래와 같습니다.
 
-## Error
-
-```text
-AttributeError: 'SageMakerRuntime' object has no attribute 'post_to_connection'
-LAMBDA_WARNING: Unhandled exception. The most likely cause is an issue in the function code. However, in rare cases, a Lambda runtime update can cause unexpected function behavior. For functions using managed runtimes, runtime updates can be triggered by a function change, or can be applied automatically. To determine if the runtime has been updated, check the runtime version in the INIT_START log entry. If this error correlates with a change in the runtime version, you may be able to mitigate this error by temporarily rolling back to the previous runtime version. For more information, see https://docs.aws.amazon.com/lambda/latest/dg/runtimes-update.html
-[ERROR] Exception: Not able to send a message
-Traceback (most recent call last):
-  File "/var/task/lambda_function.py", line 541, in lambda_handler
-    sendMessage(connectionId, "__pong__")
-  File "/var/task/lambda_function.py", line 272, in sendMessage
-    raise Exception ("Not able to send a message")
-```
+![image](https://github.com/kyopark2014/llama3-langchain-kor/assets/52392004/76825d03-fde4-494f-85f1-8b50920edf77)
