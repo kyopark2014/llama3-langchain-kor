@@ -59,7 +59,11 @@ class ContentHandler(LLMContentHandler):
     accepts = "application/json"
     
     def transform_input(self, prompt: str, model_kwargs: Dict) -> bytes:
-        input_str = json.dumps({"inputs": prompt, "parameters": model_kwargs})
+        input_str = json.dumps(
+        {
+            "inputs": prompt, 
+            "parameters": model_kwargs}
+        )
         return input_str.encode("utf-8")
 
     def transform_output(self, output: bytes) -> str:
@@ -419,9 +423,16 @@ def RAG(context, query):
 
 from langchain.chains.llm import LLMChain
 def general_conversation(query):
-    prompt_template = """Answer the following question in Korean.
-    Question: "{text}"
-    Answer:"""   
+    #prompt_template = """Answer the following question in Korean.
+    #Question: "{text}"
+    #Answer:"""   
+    
+    prompt_template = """<|begin_of_text|>
+                <|start_header_id|>system<|end_header_id|>\n\n
+                    answer the question in Korean<|eot_id|>
+                <|start_header_id|>user<|end_header_id|>\n\n
+                    "{text}"<|eot_id|>
+                <|start_header_id|>assistant<|end_header_id|>\n\n"""
     
     PROMPT = PromptTemplate(
         template=prompt_template, 
