@@ -398,6 +398,16 @@ export class CdkLlama3KorStack extends cdk.Stack {
       }),
     );  
 
+    const SageMakerPolicy = new iam.PolicyStatement({  // policy statement for sagemaker
+      actions: ['sagemaker:*'],
+      resources: ['*'],
+    });
+    roleLambdaWebsocket.attachInlinePolicy( 
+      new iam.Policy(this, `sagemaker-policy-for-${projectName}`, {
+        statements: [SageMakerPolicy],
+      }),
+    );  
+
     const lambdaChatWebsocket = new lambda.DockerImageFunction(this, `lambda-chat-ws-for-${projectName}`, {
       description: 'lambda for chat using websocket',
       functionName: `lambda-chat-ws-for-${projectName}`,

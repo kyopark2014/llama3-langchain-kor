@@ -410,7 +410,7 @@ def getResponse(connectionId, jsonBody):
 
         if text == 'clearMemory':
             chat_memory.clear()
-            map_chain[userId] = chat_memory
+            map[userId] = chat_memory
                     
             print('initiate the chat memory!')
             msg  = "The chat memory was intialized in this session."
