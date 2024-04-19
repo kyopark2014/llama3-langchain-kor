@@ -41,19 +41,6 @@ connection_url = os.environ.get('connection_url')
 client = boto3.client('apigatewaymanagementapi', endpoint_url=connection_url)
 print('connection_url: ', connection_url)
 
-BASIC_PROMPT = """<s>[INST] <<SYS>>
-{system_prompt}
-<</SYS>>
-
-{question} [/INST]"""
-
-HISTORY_PROMPT = """<s>[INST] <<SYS>>
-{system_prompt}
-<</SYS>>
-
-{chat_history}
-<s>[INST] {question} [/INST]"""
-
 class ContentHandler(LLMContentHandler):
     content_type = "application/json"
     accepts = "application/json"
@@ -70,41 +57,6 @@ class ContentHandler(LLMContentHandler):
         response_json = json.loads(output.read().decode("utf-8"))
         print('response_json: ', response_json)
         return response_json["generated_text"]
-
-    """
-    def transform_input(self, prompt: str, model_kwargs: dict) -> bytes:
-        input_str = json.dumps({
-            "inputs" : 
-            [
-                [
-                    {
-                        "role" : "system",
-                        "content" : "You are a kind robot."
-                    },
-                    {
-                        "role" : "user", 
-                        "content" : prompt
-                    }
-                ]
-            ],
-            "parameters" : {**model_kwargs}})
-        
-        input_str = json.dumps({
-            "inputs": "<|begin_of_text|>
-                <|start_header_id|>system<|end_header_id|>\n\n
-                    answer the question in Korean<|eot_id|>
-                <|start_header_id|>user<|end_header_id|>\n\n
-                    서울 여행하는 방법 추천해줄래?<|eot_id|>
-                <|start_header_id|>assistant<|end_header_id|>\n\n",
-            "parameters": {
-                "max_new_tokens": 1024,
-                "top_p": 0.9,
-                "temperature": 0.6,
-                "stop": "<|eot_id|>"
-            }
-        })
-        return input_str.encode('utf-8')
-    """          
 
 content_handler = ContentHandler()
 # aws_region = boto3.Session().region_name
@@ -427,12 +379,11 @@ def general_conversation(query):
     #Question: "{text}"
     #Answer:"""   
     
-    prompt_template = """<|begin_of_text|>
-                <|start_header_id|>system<|end_header_id|>\n\n
-                    answer the question in Korean<|eot_id|>
-                <|start_header_id|>user<|end_header_id|>\n\n
-                    "{text}"<|eot_id|>
-                <|start_header_id|>assistant<|end_header_id|>\n\n"""
+    prompt_template = """
+    <|begin_of_text|>
+        <|start_header_id|>system<|end_header_id|>\n\nanswer the question in Korean<|eot_id|>
+        <|start_header_id|>user<|end_header_id|>\n\n"{text}"<|eot_id|>
+        <|start_header_id|>assistant<|end_header_id|>\n\n"""
     
     PROMPT = PromptTemplate(
         template=prompt_template, 
@@ -442,7 +393,6 @@ def general_conversation(query):
     llm_chain = LLMChain(llm=llm, prompt=PROMPT)
     
     msg = llm_chain({"text": query}, return_only_outputs=True)
-    print('msg: ', msg)
     
     return msg['text']
     
@@ -499,7 +449,9 @@ def getResponse(connectionId, jsonBody):
         else:            
             if convType == "normal":
                 msg = general_conversation(text)                
-                print('msg: ', msg)                
+                print('msg: ', msg)         
+                msg = str(msg)       
+                print('str(msg): ', msg)                
                                         
     elif type == 'document':
         isTyping(connectionId, requestId)
@@ -594,7 +546,7 @@ def lambda_handler(event, context):
                 requestId  = jsonBody['request_id']
                 try:
                     msg = getResponse(connectionId, jsonBody)
-                    # print('msg: ', msg)
+                    print('result msg: ', msg)
                     
                     sendResultMessage(connectionId, requestId, msg)  
                                         
