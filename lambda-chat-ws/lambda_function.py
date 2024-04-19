@@ -30,8 +30,6 @@ s3_bucket = os.environ.get('s3_bucket') # bucket name
 s3_prefix = os.environ.get('s3_prefix')
 callLogTableName = os.environ.get('callLogTableName')
 bedrock_region = os.environ.get('bedrock_region', 'us-west-2')
-modelId = os.environ.get('model_id', 'amazon.titan-tg1-large')
-print('model_id[:9]: ', modelId[:9])
 path = os.environ.get('path')
 doc_prefix = s3_prefix+'/'
 endpoint_name = os.environ.get('endpoint_name')
@@ -402,104 +400,87 @@ def getResponse(connectionId, jsonBody):
     start = int(time.time())    
 
     msg = ""
-    if type == 'text' and body[:11] == 'list models':
-        bedrock_client = boto3.client(
-            service_name='bedrock',
-            region_name=bedrock_region,
-        )
-        modelInfo = bedrock_client.list_foundation_models()    
-        print('models: ', modelInfo)
+    if type == 'text':
+        text = body
+        print('query: ', text)
 
-        msg = f"The list of models: \n"
-        lists = modelInfo['modelSummaries']
-        
-        for model in lists:
-            msg += f"{model['modelId']}\n"
-        
-        msg += f"current model: {modelId}"
-        print('model lists: ', msg)    
-    else:             
-        if type == 'text':
-            text = body
-            print('query: ', text)
+        querySize = len(text)
+        textCount = len(text.split())
+        print(f"query size: {querySize}, words: {textCount}")
 
-            querySize = len(text)
-            textCount = len(text.split())
-            print(f"query size: {querySize}, words: {textCount}")
-
-            if text == 'clearMemory':
-                chat_memory.clear()
-                map_chain[userId] = chat_memory
+        if text == 'clearMemory':
+            chat_memory.clear()
+            map_chain[userId] = chat_memory
                     
-                print('initiate the chat memory!')
-                msg  = "The chat memory was intialized in this session."
-            else:            
-                if convType == "normal":                                   
-                    msg = conversation.predict(input=text)
+            print('initiate the chat memory!')
+            msg  = "The chat memory was intialized in this session."
+        else:            
+            if convType == "normal":                                   
+                msg = conversation.predict(input=text)
                                         
-        elif type == 'document':
-            isTyping(connectionId, requestId)
+    elif type == 'document':
+        isTyping(connectionId, requestId)
             
-            object = body
-            file_type = object[object.rfind('.')+1:len(object)]            
-            print('file_type: ', file_type)
+        object = body
+        file_type = object[object.rfind('.')+1:len(object)]            
+        print('file_type: ', file_type)
             
-            if file_type == 'csv':
-                docs = load_csv_document(path, doc_prefix, object)
-                contexts = []
-                for doc in docs:
-                    contexts.append(doc.page_content)
-                print('contexts: ', contexts)
+        if file_type == 'csv':
+            docs = load_csv_document(path, doc_prefix, object)
+            contexts = []
+            for doc in docs:
+                contexts.append(doc.page_content)
+            print('contexts: ', contexts)
 
-                msg = get_summary(contexts)
+            msg = get_summary(contexts)
                         
-            elif file_type == 'pdf' or file_type == 'txt' or file_type == 'md' or file_type == 'pptx' or file_type == 'docx':
-                texts = load_document(file_type, object)
+        elif file_type == 'pdf' or file_type == 'txt' or file_type == 'md' or file_type == 'pptx' or file_type == 'docx':
+            texts = load_document(file_type, object)
 
-                docs = []
-                for i in range(len(texts)):
-                    docs.append(
-                        Document(
-                            page_content=texts[i],
-                            metadata={
-                                'name': object,
-                                # 'page':i+1,
-                                'uri': path+doc_prefix+parse.quote(object)
-                            }
-                        )
+            docs = []
+            for i in range(len(texts)):
+                docs.append(
+                    Document(
+                        page_content=texts[i],
+                        metadata={
+                            'name': object,
+                            # 'page':i+1,
+                            'uri': path+doc_prefix+parse.quote(object)
+                        }
                     )
-                print('docs[0]: ', docs[0])    
-                print('docs size: ', len(docs))
+                )
+            print('docs[0]: ', docs[0])    
+            print('docs size: ', len(docs))
 
-                contexts = []
-                for doc in docs:
-                    contexts.append(doc.page_content)
-                print('contexts: ', contexts)
+            contexts = []
+            for doc in docs:
+                contexts.append(doc.page_content)
+            print('contexts: ', contexts)
 
-                msg = get_summary(contexts)
+            msg = get_summary(contexts)
                 
-        elapsed_time = int(time.time()) - start
-        print("total run time(sec): ", elapsed_time)
+    elapsed_time = int(time.time()) - start
+    print("total run time(sec): ", elapsed_time)
         
-        print('msg: ', msg)
+    print('msg: ', msg)
 
-        item = {
-            'user_id': {'S':userId},
-            'request_id': {'S':requestId},
-            'request_time': {'S':requestTime},
-            'type': {'S':type},
-            'body': {'S':body},
-            'msg': {'S':msg}
-        }
+    item = {
+        'user_id': {'S':userId},
+        'request_id': {'S':requestId},
+        'request_time': {'S':requestTime},
+        'type': {'S':type},
+        'body': {'S':body},
+        'msg': {'S':msg}
+    }
 
-        client = boto3.client('dynamodb')
-        try:
-            resp =  client.put_item(TableName=callLogTableName, Item=item)
-        except Exception:
-            err_msg = traceback.format_exc()
-            print('error message: ', err_msg)
-            raise Exception ("Not able to write into dynamodb")               
-        #print('resp, ', resp)
+    client = boto3.client('dynamodb')
+    try:
+        resp =  client.put_item(TableName=callLogTableName, Item=item)
+    except Exception:
+        err_msg = traceback.format_exc()
+        print('error message: ', err_msg)
+        raise Exception ("Not able to write into dynamodb")               
+    #print('resp, ', resp)
 
     return msg
 
