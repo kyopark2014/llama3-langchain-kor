@@ -12,7 +12,6 @@ import traceback
 from botocore.config import Config
 from io import BytesIO
 from urllib import parse
-from typing import Dict
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.docstore.document import Document
 from langchain.chains.summarize import load_summarize_chain
@@ -57,18 +56,9 @@ HISTORY_PROMPT = """<s>[INST] <<SYS>>
 class ContentHandler(LLMContentHandler):
     content_type = "application/json"
     accepts = "application/json"
-    
-    def transform_input(self, prompt: str, model_kwargs: Dict) -> bytes:
-        input_str = json.dumps({"inputs": prompt, "parameters": model_kwargs})
-        return input_str.encode("utf-8")
 
-    def transform_output(self, output: bytes) -> str:
-        response_json = json.loads(output.read().decode("utf-8"))
-        print('response_json: ', response_json)
-        return response_json["generated_text"]
-
-    """
     def transform_input(self, prompt: str, model_kwargs: dict) -> bytes:
+        """
         input_str = json.dumps({
             "inputs" : 
             [
@@ -84,14 +74,17 @@ class ContentHandler(LLMContentHandler):
                 ]
             ],
             "parameters" : {**model_kwargs}})
-        
+        """
         input_str = json.dumps({
-            "inputs": "<|begin_of_text|>
+            "inputs": 
+                """
+                <|begin_of_text|>
                 <|start_header_id|>system<|end_header_id|>\n\n
                     answer the question in Korean<|eot_id|>
                 <|start_header_id|>user<|end_header_id|>\n\n
                     서울 여행하는 방법 추천해줄래?<|eot_id|>
-                <|start_header_id|>assistant<|end_header_id|>\n\n",
+                <|start_header_id|>assistant<|end_header_id|>\n\n
+                """,
             "parameters": {
                 "max_new_tokens": 1024,
                 "top_p": 0.9,
@@ -100,7 +93,11 @@ class ContentHandler(LLMContentHandler):
             }
         })
         return input_str.encode('utf-8')
-    """          
+      
+    def transform_output(self, output: bytes) -> str:
+        response_json = json.loads(output.read().decode("utf-8"))        
+        print('response_json: ', response_json)
+        return response_json["generated_text"]
 
 content_handler = ContentHandler()
 # aws_region = boto3.Session().region_name
@@ -118,7 +115,6 @@ llm = SagemakerEndpoint(
     endpoint_name = endpoint_name, 
     region_name = aws_region, 
     model_kwargs = parameters,
-    client = client,
     endpoint_kwargs={"CustomAttributes": "accept_eula=true"},
     content_handler = content_handler
 )
@@ -423,7 +419,7 @@ def getResponse(connectionId, jsonBody):
         allowTime = getAllowTime()
         load_chatHistory(userId, allowTime, chat_memory)
     
-    #conversation = ConversationChain(llm=llm, verbose=True, memory=chat_memory)
+    conversation = ConversationChain(llm=llm, verbose=True, memory=chat_memory)
     
     start = int(time.time())    
 
