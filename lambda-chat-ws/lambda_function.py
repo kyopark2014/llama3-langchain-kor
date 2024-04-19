@@ -548,7 +548,8 @@ def lambda_handler(event, context):
                     msg = getResponse(connectionId, jsonBody)
                     print('result msg: ', msg)
                     
-                    sendResultMessage(connectionId, requestId, msg)  
+                    #sendResultMessage(connectionId, requestId, msg)  
+                    sendResultMessage(connectionId, requestId, "답변입니다.")  
                                         
                 except Exception:
                     err_msg = traceback.format_exc()
