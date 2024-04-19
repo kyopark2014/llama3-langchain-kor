@@ -63,7 +63,7 @@ class ContentHandler(LLMContentHandler):
 content_handler = ContentHandler()
 
 client = boto3.client(
-    "sagemaker-runtime",
+    service_name="sagemaker",
     region_name=aws_region,
 )
 parameters = {
