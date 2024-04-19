@@ -2,14 +2,15 @@
 
 ## Llama3 설치하기
 
+[SageMaker-Oregon](https://us-west-2.console.aws.amazon.com/sagemaker/home?region=us-west-2#/studio-landing)에 접속해서 SageMaker Studio에서 아래와 같이 Llama3를 설치합니다. 자세한 내용은 [Meta Llama 3 models](https://aws.amazon.com/ko/blogs/machine-learning/meta-llama-3-models-are-now-available-in-amazon-sagemaker-jumpstart/)을 참조합니다. 
 
 ![image](https://github.com/kyopark2014/llama3-langchain-rag/assets/52392004/7aa5db7e-c8aa-4f27-9c77-19b561e1426a)
 
-
+Meta-Llama-3-8B-Instruct을 선택하면, ml.g5.12xlarge가 기본값으로 선택됩니다. Deploy를 선택하면 아래와 같이 "jumpstart-dft-meta-textgeneration-llama-3-8b-instruct"라는 이름으로 SageMaker Endpoint가 설치됩니다. 
 
 ![image](https://github.com/kyopark2014/llama3-langchain-rag/assets/52392004/2aa02d81-b7c6-473c-a1e9-a6070453e42f)
 
-
+Llama3가 설치가 되면 AWS CDK를 이용하여 필요한 인프라를 설치합니다.
 
 
 ## CDK를 이용한 인프라 설치하기
@@ -26,7 +27,7 @@
 
 3) EBS 크기 변경
 
-아래와 같이 스크립트를 다운로드 합니다. 
+코드를 수정하면서 추가 빌드를 하게 되면 EBS 용량을 확대하는것이 편리합니다. 이를 위하여, 아래와 같이 스크립트를 다운로드 합니다. 
 
 ```text
 curl https://raw.githubusercontent.com/kyopark2014/technical-summary/main/resize.sh -o resize.sh
@@ -37,17 +38,16 @@ curl https://raw.githubusercontent.com/kyopark2014/technical-summary/main/resize
 chmod a+rx resize.sh && ./resize.sh 80
 ```
 
-
 4) 소스를 다운로드합니다.
 
 ```java
-git clone https://github.com/kyopark2014/llm-voicebot
+git clone https://github.com/kyopark2014/llama3-langchain-kor
 ```
 
 5) cdk 폴더로 이동하여 필요한 라이브러리를 설치합니다.
 
 ```java
-cd llm-voicebot/cdk-voicebot/ && npm install
+cd llama3-langchain-kor/cdk-llama3-kor/ && npm install
 ```
 
 7) CDK 사용을 위해 Boostraping을 수행합니다.
@@ -79,21 +79,21 @@ cdk deploy --all
 
 [VPC Console](https://ap-northeast-2.console.aws.amazon.com/vpcconsole/home?region=ap-northeast-2#vpcs:)에 접속합니다.
 
-아래와 같이 "vpc-for-llm-voicebot"의 VPC ID를 선택합니다. 
+아래와 같이 "vpc-for-llama3-langchain-kor"의 VPC ID를 선택합니다. 
 
-![image](https://github.com/kyopark2014/llm-voicebot/assets/52392004/764dd596-c8b9-4c89-80c5-ba612d5829a7)
+![image](https://github.com/kyopark2014/llama3-langchain-kor/assets/52392004/764dd596-c8b9-4c89-80c5-ba612d5829a7)
 
 아래와 같이 subnet중에 private를 찾아서 Route tables을 선택합니다. Subnets에서 public/private 이름을 가진 2개의 subnet이 있으므로 private을 주의하여 선택합니다. 
 
-![noname](https://github.com/kyopark2014/llm-voicebot/assets/52392004/cbf27381-9c73-460d-89eb-0682d5bea066)
+![noname](https://github.com/kyopark2014/llama3-langchain-kor/assets/52392004/cbf27381-9c73-460d-89eb-0682d5bea066)
 
 [Routs]에서 [Edit routes]를 선택합니다.
 
-![noname](https://github.com/kyopark2014/llm-voicebot/assets/52392004/047be27b-0518-475a-ba9a-a9fe3e781cc2)
+![noname](https://github.com/kyopark2014/llama3-langchain-kor/assets/52392004/047be27b-0518-475a-ba9a-a9fe3e781cc2)
 
 아래와 같이 [Add route]를 선택하여, Destionation으로 "0.0.0.0/0"을 선택하고, Target은 "Nat Gateway"를 선택하여 생성되어 있는 NAT를 지정합니다. 이후 [Save changes]를 선택하여 저장합니다. 
 
-![noname](https://github.com/kyopark2014/llm-voicebot/assets/52392004/a03e9e9e-b49b-4210-96d3-c0c1cd0f3493)
+![noname](https://github.com/kyopark2014/llama3-langchain-kor/assets/52392004/a03e9e9e-b49b-4210-96d3-c0c1cd0f3493)
 
 10) Output의 WebUrlforstreamchatbot의 URL로 접속합니다. Voice Interpreter와 사용자 ID를 이용해 데이터를 교환합니다. 따라서 사용자 ID로 "robot"라고 입력합니다.
 
