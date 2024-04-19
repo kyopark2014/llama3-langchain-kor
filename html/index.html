@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title>LLM</title>
+        <link rel="stylesheet", href="login.css">
+    </head>
+    <body>
+        <header> 
+            <h1>LLM Chatbot</h1>
+        </header>
+        <section class="container">
+            <form id="my-form">
+                <div class="msg">For login, use your own ID which should represent your identity.</div>
+                <div class="input">
+                    <label for="userId">User Id:</label>
+                    <input type="text" id="userId">
+                    <text>Conversation Type: </text>
+                    <select name="conversationType" id="convtype">
+                        <option type="text" value="normal" selected>1. General Conversation</option>
+                    </select>
+                </div>
+                <input class="btn" type="submit" value="Submit">                
+            </form>
+        </section>        
+        <script src="login.js"></script>
+    </body>
+</html>
+
