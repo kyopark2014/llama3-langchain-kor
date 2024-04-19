@@ -419,9 +419,9 @@ def RAG(context, query):
 
 from langchain.chains.llm import LLMChain
 def general_conversation(query):
-    prompt_template = """Write a concise summary of the following:
-    "{text}"
-    CONCISE SUMMARY:"""   
+    prompt_template = """Answer the following question in Korean.
+    Question: "{text}"
+    Answer:"""   
     
     PROMPT = PromptTemplate(
         template=prompt_template, 
@@ -433,7 +433,7 @@ def general_conversation(query):
     msg = llm_chain({"text": query}, return_only_outputs=True)
     print('msg: ', msg)
     
-    return msg
+    return msg['text']
     
 def getResponse(connectionId, jsonBody):
     print('jsonBody: ', jsonBody)
