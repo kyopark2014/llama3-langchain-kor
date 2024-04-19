@@ -400,8 +400,7 @@ def general_conversation2(query):
         input_variables=["text"]
     )
     
-    history = memory_chain.load_memory_variables({})["chat_history"]
-    print('memory_chain: ', history)
+    
                 
     llm_chain = LLMChain(llm=llm, prompt=PROMPT)
     
@@ -410,7 +409,7 @@ def general_conversation2(query):
     return msg['text']
 
 
-def general_conversation(query, history):
+def general_conversation(query):
     prompt_template = """
     <|begin_of_text|>
         <|start_header_id|>system<|end_header_id|>\n\nAlways answer without emojis in Korean<|eot_id|>
@@ -426,6 +425,9 @@ def general_conversation(query, history):
         template=prompt_template, 
         input_variables=["chat_history", "question"]
     )
+    
+    history = memory_chain.load_memory_variables({})["chat_history"]
+    print('memory_chain: ', history)
     
     llm_chain = LLMChain(llm=llm, prompt=PROMPT)
     
@@ -483,7 +485,7 @@ def getResponse(connectionId, jsonBody):
             msg  = "The chat memory was intialized in this session."
         else:            
             if convType == "normal":
-                msg = general_conversation(text, "")                
+                msg = general_conversation(text)                
                 print('msg: ', msg)         
                 msg = str(msg)       
                 print('str(msg): ', msg)
