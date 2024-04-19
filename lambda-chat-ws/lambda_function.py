@@ -86,7 +86,7 @@ def initiate_LLM():
 
 llm = initiate_LLM()
 
-map = dict() 
+map_chain = dict() 
 MSG_LENGTH = 100
 
 # load documents from s3 for pdf and txt
@@ -194,18 +194,24 @@ def get_summary(texts):
         # return summary[1:len(summary)-1]   
         return summary
     
-def load_chatHistory(userId, allowTime, chat_memory):
+def load_chat_history(userId, allowTime):
     dynamodb_client = boto3.client('dynamodb')
+    print('loading history.')
 
-    response = dynamodb_client.query(
-        TableName=callLogTableName,
-        KeyConditionExpression='user_id = :userId AND request_time > :allowTime',
-        ExpressionAttributeValues={
-            ':userId': {'S': userId},
-            ':allowTime': {'S': allowTime}
-        }
-    )
-    print('query result: ', response['Items'])
+    try: 
+        response = dynamodb_client.query(
+            TableName=callLogTableName,
+            KeyConditionExpression='user_id = :userId AND request_time > :allowTime',
+            ExpressionAttributeValues={
+                ':userId': {'S': userId},
+                ':allowTime': {'S': allowTime}
+            }
+        )
+        print('query result: ', response['Items'])
+    except Exception:
+        err_msg = traceback.format_exc()
+        print('error message: ', err_msg)                    
+        raise Exception ("Not able to request to DynamoDB")
 
     for item in response['Items']:
         text = item['body']['S']
@@ -213,10 +219,11 @@ def load_chatHistory(userId, allowTime, chat_memory):
         type = item['type']['S']
 
         if type == 'text':
-            print('text: ', text)
-            print('msg: ', msg)        
-
-            chat_memory.save_context({"input": text}, {"output": msg})             
+            memory_chain.chat_memory.add_user_message(text)
+            if len(msg) > MSG_LENGTH:
+                memory_chain.chat_memory.add_ai_message(msg[:MSG_LENGTH])                          
+            else:
+                memory_chain.chat_memory.add_ai_message(msg)            
 
 def getAllowTime():
     d = datetime.datetime.now() - datetime.timedelta(days = 2)
@@ -392,6 +399,9 @@ def general_conversation2(query):
         template=prompt_template, 
         input_variables=["text"]
     )
+    
+    history = memory_chain.load_memory_variables({})["chat_history"]
+    print('memory_chain: ', history)
                 
     llm_chain = LLMChain(llm=llm, prompt=PROMPT)
     
@@ -439,20 +449,20 @@ def getResponse(connectionId, jsonBody):
     convType = jsonBody['convType']
     print('convType: ', convType)
     
-    global llm, chat_memory, map
+    global llm, memory_chain, map_chain
     global enableConversationMode  # debug
 
     # create memory
-    if userId in map:  
-        chat_memory = map[userId]
-        print('chat_memory exist. reuse it!')
+    if userId in map_chain:  
+        chat_memory = map_chain[userId]
+        print('memory_chain exist. reuse it!')
     else: 
-        chat_memory = ConversationBufferMemory(human_prefix='User', ai_prefix='Assistant')
-        map[userId] = chat_memory
-        print('chat_memory does not exist. create new one!')
+        memory_chain = ConversationBufferWindowMemory(memory_key="chat_history", output_key='answer', return_messages=True, k=3)
+        map_chain[userId] = memory_chain
+        print('memory_chain does not exist. create new one!')
 
         allowTime = getAllowTime()
-        load_chatHistory(userId, allowTime, chat_memory)
+        load_chat_history(userId, allowTime)
     
     start = int(time.time())    
 
@@ -466,8 +476,8 @@ def getResponse(connectionId, jsonBody):
         print(f"query size: {querySize}, words: {textCount}")
 
         if text == 'clearMemory':
-            chat_memory.clear()
-            map[userId] = chat_memory
+            memory_chain.clear()
+            map_chain[userId] = memory_chain
                     
             print('initiate the chat memory!')
             msg  = "The chat memory was intialized in this session."
@@ -476,7 +486,10 @@ def getResponse(connectionId, jsonBody):
                 msg = general_conversation(text, "")                
                 print('msg: ', msg)         
                 msg = str(msg)       
-                print('str(msg): ', msg)                
+                print('str(msg): ', msg)
+            
+            memory_chain.chat_memory.add_user_message(text)
+            memory_chain.chat_memory.add_ai_message(msg)
                                         
     elif type == 'document':
         isTyping(connectionId, requestId)
@@ -518,10 +531,12 @@ def getResponse(connectionId, jsonBody):
             print('contexts: ', contexts)
 
             msg = get_summary(contexts)
+            
+            memory_chain.chat_memory.add_user_message(text)
+            memory_chain.chat_memory.add_ai_message(msg)
                 
     elapsed_time = int(time.time()) - start
-    print("total run time(sec): ", elapsed_time)
-        
+    print("total run time(sec): ", elapsed_time)        
     print('msg: ', msg)
 
     item = {
