@@ -1,6 +1,6 @@
 # 인프라 설치하기
 
-## Llama2 설치하기
+## Llama3 설치하기
 
 
 ![image](https://github.com/kyopark2014/llama3-langchain-rag/assets/52392004/7aa5db7e-c8aa-4f27-9c77-19b561e1426a)
