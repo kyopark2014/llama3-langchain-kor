@@ -4,6 +4,94 @@
 
 <img src="https://github.com/kyopark2014/llama3-langchain-kor/assets/52392004/76825d03-fde4-494f-85f1-8b50920edf77" width="800">
 
+## 주요 구성
+
+SageMaker Endpoint로 LLM을 사용하기 위하여 ContentHandler를 정의합니다. 
+
+```python
+from langchain.llms.sagemaker_endpoint import LLMContentHandler
+
+class ContentHandler(LLMContentHandler):
+    content_type = "application/json"
+    accepts = "application/json"
+    
+    def transform_input(self, prompt: str, model_kwargs: Dict) -> bytes:
+        input_str = json.dumps(
+        {
+            "inputs": prompt, 
+            "parameters": model_kwargs}
+        )
+        return input_str.encode("utf-8")
+
+    def transform_output(self, output: bytes) -> str:
+        response_json = json.loads(output.read().decode("utf-8"))
+        print('response_json: ', response_json)
+        return response_json["generated_text"]
+
+content_handler = ContentHandler()
+```
+
+boto client에서는 service로 "sagemaker-runtime"을 사용학고, 아래와 같이 parameter도 정의할 수 있습니다. 이후 LangChain의 SagemakerEndpoint를 이용해 llm을 정의합니다.
+
+```python
+from langchain_community.llms import SagemakerEndpoint
+
+def initiate_LLM():
+    sagemaker_client = boto3.client(
+        service_name="sagemaker-runtime",
+        region_name=aws_region,
+    )
+    parameters = {
+        "max_new_tokens": 1024, 
+        "top_p": 0.9, 
+        "temperature": 0.1,
+        "stop": "<|eot_id|>"
+    } 
+
+    llm = SagemakerEndpoint(
+        endpoint_name = endpoint_name, 
+        region_name = "us-west-2", 
+        model_kwargs = parameters,
+        client = sagemaker_client,
+        endpoint_kwargs={"CustomAttributes": "accept_eula=true"},
+        content_handler = content_handler
+    )    
+    return llm
+```
+
+채팅이력을 포함하여 답변을 구하기 위하여 아래와 같이 prompt를 구성합니다. 
+    
+```python
+def general_conversation(query):
+    prompt_template = """
+    <|begin_of_text|>
+        <|start_header_id|>system<|end_header_id|>\n\nAlways answer without emojis in Korean<|eot_id|>
+        <|start_header_id|>user<|end_header_id|>\n\n"
+        History: {chat_history}
+        
+        Question: {question}
+        
+        Answer:"<|eot_id|>
+        <|start_header_id|>assistant<|end_header_id|>\n\n"""
+    
+    PROMPT = PromptTemplate(
+        template=prompt_template, 
+        input_variables=["chat_history", "question"]
+    )
+    
+    history = memory_chain.load_memory_variables({})["chat_history"]
+    print('memory_chain: ', history)
+    
+    llm_chain = LLMChain(llm=llm, prompt=PROMPT)
+    
+    msg = llm_chain({"question": query, "chat_history": history}, return_only_outputs=True)
+    
+    return msg['text']
+
+msg = general_conversation(text)    
+```
+
+
 ## 직접 실습 해보기
 
 ### 사전 준비 사항
@@ -14,7 +102,7 @@
 
 ### CDK를 이용한 인프라 설치
 
-본 실습에서는 Seoul 리전 (ap-northeast-2)을 사용합니다. [인프라 설치](./deployment.md)에 따라 CDK로 인프라 설치를 진행합니다. [CDK 구현 코드](./cdk-multimodal-and-rag/README.md)에서는 Typescript로 인프라를 정의하는 방법에 대해 상세히 설명하고 있습니다. 
+본 실습에서는 Seoul 리전 (ap-northeast-2)을 사용합니다. [인프라 설치](./deployment.md)에 따라 CDK로 인프라 설치를 진행합니다. 
 
 ## 실행결과
 
