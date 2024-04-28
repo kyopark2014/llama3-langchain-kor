@@ -184,7 +184,13 @@ def load_csv_document(s3_file_name):
     return docs
 
 def get_summary(texts):        
-    prompt_template = """\n\nUser: 다음 텍스트를 요약해서 500자 이내의 한국어로 설명하세오.
+    prompt_template = """
+    <|begin_of_text|>
+        <|start_header_id|>system<|end_header_id|>\n\n다음 텍스트를 요약해서 500자 이내의 한국어로 설명하세오. Always answer without emojis in Korean<|eot_id|>
+        <|start_header_id|>user<|end_header_id|>\n\n"{text}"<|eot_id|>
+        <|start_header_id|>assistant<|end_header_id|>\n\n"""
+        
+    prompt_template = """\n\nUser: 다음 텍스트를 요약해서 500자 이내의 한국어로 설명하세오. Always answer without emojis in Korean.
 
     {text}
         
