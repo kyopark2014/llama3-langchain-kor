@@ -389,32 +389,23 @@ def general_conversation(query):
     
     return msg['text']
 
+from langchain_core.output_parsers import StrOutputParser
 def general_conversation_with_chain(query):
-    prompt_template = """
-    <|begin_of_text|>
-        <|start_header_id|>system<|end_header_id|>\n\nAlways answer without emojis in Korean<|eot_id|>
-        <|start_header_id|>user<|end_header_id|>\n\n"{text}"<|eot_id|>
-        <|start_header_id|>assistant<|end_header_id|>\n\n"""
-    
-    PROMPT = PromptTemplate(
-        template=prompt_template, 
-        input_variables=["text"]
-    )
-                
-    llm_chain = LLMChain(llm=llm, prompt=PROMPT)
-    
     system = (
         "Always answer without emojis in Korean."
     )
     human = "{input}"
     
-    prompt = ChatPromptTemplate.from_messages([("system", system), MessagesPlaceholder(variable_name="history"), ("human", human)])
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", system), 
+        MessagesPlaceholder(variable_name="history"), 
+        ("human", human)])
     print('prompt: ', prompt)
     
     history = memory_chain.load_memory_variables({})["chat_history"]
     print('memory_chain: ', history)
     
-    chain = prompt | llm    
+    chain = prompt | llm | StrOutputParser()
     try: 
         output = chain.invoke(
             {
