@@ -405,11 +405,9 @@ def general_conversation(query):
     chat_history = get_chat_history(history)
     print('chat_history: ', chat_history)
     
-    get_chat_history(history)
-    
     llm_chain = LLMChain(llm=llm, prompt=PROMPT)
     
-    msg = llm_chain({"text": query, "chat_history": history}, return_only_outputs=True)
+    msg = llm_chain({"text": query, "chat_history": chat_history}, return_only_outputs=True)
     
     return msg['text']
 
