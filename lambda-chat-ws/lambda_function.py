@@ -349,7 +349,7 @@ def RAG(context, query):
     return msg
 
 from langchain.chains.llm import LLMChain
-def general_conversation2(query):
+def general_question(query):
     prompt_template = """
     <|begin_of_text|>
         <|start_header_id|>system<|end_header_id|>\n\nAlways answer without emojis in Korean<|eot_id|>
@@ -360,15 +360,12 @@ def general_conversation2(query):
         template=prompt_template, 
         input_variables=["text"]
     )
-    
-    
                 
     llm_chain = LLMChain(llm=llm, prompt=PROMPT)
     
     msg = llm_chain({"text": query}, return_only_outputs=True)
     
     return msg['text']
-
 
 def general_conversation(query):
     prompt_template = """
@@ -391,6 +388,51 @@ def general_conversation(query):
     msg = llm_chain({"text": query, "chat_history": history}, return_only_outputs=True)
     
     return msg['text']
+
+def general_conversation_with_chain(query):
+    prompt_template = """
+    <|begin_of_text|>
+        <|start_header_id|>system<|end_header_id|>\n\nAlways answer without emojis in Korean<|eot_id|>
+        <|start_header_id|>user<|end_header_id|>\n\n"{text}"<|eot_id|>
+        <|start_header_id|>assistant<|end_header_id|>\n\n"""
+    
+    PROMPT = PromptTemplate(
+        template=prompt_template, 
+        input_variables=["text"]
+    )
+                
+    llm_chain = LLMChain(llm=llm, prompt=PROMPT)
+    
+    system = (
+        "Always answer without emojis in Korean."
+    )
+    human = "{input}"
+    
+    prompt = ChatPromptTemplate.from_messages([("system", system), MessagesPlaceholder(variable_name="history"), ("human", human)])
+    print('prompt: ', prompt)
+    
+    history = memory_chain.load_memory_variables({})["chat_history"]
+    print('memory_chain: ', history)
+    
+    chain = prompt | llm    
+    try: 
+        output = chain.invoke(
+            {
+                "history": history,
+                "input": query,
+            }
+        )
+        # msg = llm_chain({"text": query}, return_only_outputs=True)
+        print('output: ', output)
+        
+        msg = output.content
+        print('msg: ', msg)
+        
+    except Exception:
+        err_msg = traceback.format_exc()
+        print('error message: ', err_msg)        
+    
+    return msg
 
 def getResponse(connectionId, jsonBody):
     print('jsonBody: ', jsonBody)
@@ -442,7 +484,9 @@ def getResponse(connectionId, jsonBody):
             msg  = "The chat memory was intialized in this session."
         else:            
             if convType == "normal":
-                msg = general_conversation(text)                
+                #msg = general_conversation(text)         
+                msg = general_conversation_with_chain(text)    
+                       
                 print('msg: ', msg)         
             
             memory_chain.chat_memory.add_user_message(text)
