@@ -189,12 +189,6 @@ def get_summary(texts):
         <|start_header_id|>system<|end_header_id|>\n\nSummarize the following text in 500 characters or less in Korean.<|eot_id|>
         <|start_header_id|>user<|end_header_id|>\n\n"{text}"<|eot_id|>
         <|start_header_id|>assistant<|end_header_id|>\n\n"""
-        
-    prompt_template = """\n\nUser: 다음 텍스트를 요약해서 500자 이내의 한국어로 설명하세오. Always answer without emojis in Korean.
-
-    {text}
-        
-    Assistant:"""        
     
     PROMPT = PromptTemplate(template=prompt_template, input_variables=["text"])
     chain = load_summarize_chain(llm, chain_type="stuff", prompt=PROMPT)
