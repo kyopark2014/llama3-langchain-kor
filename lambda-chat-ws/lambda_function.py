@@ -103,8 +103,36 @@ def load_document(file_type, s3_file_name):
             raw_text.append(page.extract_text())
         contents = '\n'.join(raw_text)    
         
-    elif file_type == 'txt':        
+    elif file_type == 'pptx':
+        Byte_contents = doc.get()['Body'].read()
+            
+        from pptx import Presentation
+        prs = Presentation(BytesIO(Byte_contents))
+
+        texts = []
+        for i, slide in enumerate(prs.slides):
+            text = ""
+            for shape in slide.shapes:
+                if shape.has_text_frame:
+                    text = text + shape.text
+            texts.append(text)
+        contents = '\n'.join(texts)
+        
+    elif file_type == 'txt' or file_type == 'md':        
         contents = doc.get()['Body'].read().decode('utf-8')
+
+    elif file_type == 'docx':
+        Byte_contents = doc.get()['Body'].read()
+            
+        import docx
+        doc_contents =docx.Document(BytesIO(Byte_contents))
+
+        texts = []
+        for i, para in enumerate(doc_contents.paragraphs):
+            if(para.text):
+                texts.append(para.text)
+                # print(f"{i}: {para.text}")        
+        contents = '\n'.join(texts)
         
     print('contents: ', contents)
     new_contents = str(contents).replace("\n"," ") 
@@ -446,6 +474,8 @@ def getResponse(connectionId, jsonBody):
 
     msg = ""
     if type == 'text':
+        isTyping(connectionId, requestId)
+        
         text = body
         print('query: ', text)
 
