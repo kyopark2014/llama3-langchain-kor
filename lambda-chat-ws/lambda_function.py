@@ -367,6 +367,25 @@ def general_question(query):
     
     return msg['text']
 
+from langchain.schema import BaseMessage
+_ROLE_MAP = {"human": "\n\nHuman: ", "ai": "\n\nAssistant: "}
+def get_chat_history(chat_history):
+    buffer = ""
+    for dialogue_turn in chat_history:
+        if isinstance(dialogue_turn, BaseMessage):
+            role_prefix = _ROLE_MAP.get(dialogue_turn.type, f"{dialogue_turn.type}: ")
+            buffer += f"\n{role_prefix}{dialogue_turn.content}"
+        elif isinstance(dialogue_turn, tuple):
+            human = "\n\nHuman: " + dialogue_turn[0]
+            ai = "\n\nAssistant: " + dialogue_turn[1]
+            buffer += "\n" + "\n".join([human, ai])
+        else:
+            raise ValueError(
+                f"Unsupported chat history format: {type(dialogue_turn)}."
+                f" Full chat history: {chat_history} "
+            )
+    return buffer
+
 def general_conversation(query):
     prompt_template = """
     <|begin_of_text|>
@@ -383,47 +402,16 @@ def general_conversation(query):
     history = memory_chain.load_memory_variables({})["chat_history"]
     print('memory_chain: ', history)
     
+    chat_history = get_chat_history(history)
+    print('chat_history: ', chat_history)
+    
+    get_chat_history(history)
+    
     llm_chain = LLMChain(llm=llm, prompt=PROMPT)
     
     msg = llm_chain({"text": query, "chat_history": history}, return_only_outputs=True)
     
     return msg['text']
-
-from langchain_core.output_parsers import StrOutputParser
-def general_conversation_with_chain(query):
-    system = (
-        "Always answer without emojis in Korean."
-    )
-    human = "{input}"
-    
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", system), 
-        MessagesPlaceholder(variable_name="history"),
-        ("human", human)])
-    print('prompt: ', prompt)
-    
-    history = memory_chain.load_memory_variables({})["chat_history"]
-    print('memory_chain: ', history)
-    
-    chain = prompt | llm | StrOutputParser()
-    try: 
-        output = chain.invoke(
-            {
-                "history": history,
-                "input": query,
-            }
-        )
-        # msg = llm_chain({"text": query}, return_only_outputs=True)
-        print('output: ', output)
-        
-        msg = output
-        print('msg: ', msg)
-        
-    except Exception:
-        err_msg = traceback.format_exc()
-        print('error message: ', err_msg)        
-    
-    return msg
 
 def getResponse(connectionId, jsonBody):
     print('jsonBody: ', jsonBody)
@@ -475,8 +463,7 @@ def getResponse(connectionId, jsonBody):
             msg  = "The chat memory was intialized in this session."
         else:            
             if convType == "normal":
-                #msg = general_conversation(text)         
-                msg = general_conversation_with_chain(text)    
+                msg = general_conversation(text)         
                        
                 print('msg: ', msg)         
             
