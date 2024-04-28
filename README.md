@@ -31,7 +31,7 @@ class ContentHandler(LLMContentHandler):
 content_handler = ContentHandler()
 ```
 
-boto client에서는 service로 "sagemaker-runtime"을 사용학고, 아래와 같이 parameter도 정의할 수 있습니다. 이후 LangChain의 SagemakerEndpoint를 이용해 llm을 정의합니다.
+boto3 client에서는 service로 "sagemaker-runtime"을 사용학고, 아래와 같이 parameter도 정의할 수 있습니다. 이후 LangChain의 SagemakerEndpoint를 이용해 llm을 정의합니다.
 
 ```python
 from langchain_community.llms import SagemakerEndpoint
@@ -59,7 +59,7 @@ def initiate_LLM():
     return llm
 ```
 
-채팅이력을 포함하여 답변을 구하기 위하여 아래와 같이 prompt를 구성합니다. 
+채팅이력을 포함하여 답변을 구하기 위하여 아래와 같이 prompt를 구성합니다. 상세한 코드는 [lambda-chat](./lambda-chat-ws/lambda_function.py)을 참조합니다. 
     
 ```python
 def general_conversation(query):
