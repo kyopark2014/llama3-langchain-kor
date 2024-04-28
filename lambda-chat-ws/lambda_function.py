@@ -89,19 +89,19 @@ llm = initiate_LLM()
 map_chain = dict() 
 MSG_LENGTH = 100
 
-# load documents from s3 for pdf and txt
+# load documents from s3 
 def load_document(file_type, s3_file_name):
     s3r = boto3.resource("s3")
     doc = s3r.Object(s3_bucket, s3_prefix+'/'+s3_file_name)
     
     if file_type == 'pdf':
-        contents = doc.get()['Body'].read()
-        reader = PyPDF2.PdfReader(BytesIO(contents))
+        Byte_contents = doc.get()['Body'].read()
+        reader = PyPDF2.PdfReader(BytesIO(Byte_contents))
         
-        raw_text = []
+        texts = []
         for page in reader.pages:
-            raw_text.append(page.extract_text())
-        contents = '\n'.join(raw_text)    
+            texts.append(page.extract_text())
+        contents = '\n'.join(texts)
         
     elif file_type == 'pptx':
         Byte_contents = doc.get()['Body'].read()
@@ -133,8 +133,8 @@ def load_document(file_type, s3_file_name):
                 texts.append(para.text)
                 # print(f"{i}: {para.text}")        
         contents = '\n'.join(texts)
-        
-    print('contents: ', contents)
+            
+    # print('contents: ', contents)
     new_contents = str(contents).replace("\n"," ") 
     print('length: ', len(new_contents))
 
@@ -146,8 +146,7 @@ def load_document(file_type, s3_file_name):
     ) 
 
     texts = text_splitter.split_text(new_contents) 
-    print('texts[0]: ', texts[0])
-    
+                
     return texts
 
 # load csv documents from s3
@@ -540,7 +539,7 @@ def getResponse(connectionId, jsonBody):
             msg = get_summary(contexts)
             
             memory_chain.chat_memory.add_user_message(f"{object}에서 텍스트를 추출하세요.")
-            memory_chain.chat_memory.add_ai_message(msg)
+            memory_chain.chat_memory.add_ai_message(msg)           
                 
     elapsed_time = int(time.time()) - start
     print("total run time(sec): ", elapsed_time)        
