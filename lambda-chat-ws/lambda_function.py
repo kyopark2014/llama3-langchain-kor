@@ -425,7 +425,7 @@ def general_conversation_with_chain(query):
         # msg = llm_chain({"text": query}, return_only_outputs=True)
         print('output: ', output)
         
-        msg = output.content
+        msg = output.AI
         print('msg: ', msg)
         
     except Exception:
