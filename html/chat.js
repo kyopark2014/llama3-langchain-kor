@@ -499,6 +499,34 @@ attachFile.addEventListener('click', function(){
             else if(ext == 'csv') {
                 contentType = 'text/csv'
             }
+            else if(ext == 'ppt') {
+                contentType = 'application/vnd.ms-powerpoint'
+            }
+            else if(ext == 'pptx') {
+                contentType = 'application/vnd.ms-powerpoint'
+            }
+            else if(ext == 'doc' || ext == 'docx') {
+                contentType = 'application/msword'
+            }
+            else if(ext == 'xls') {
+                contentType = 'application/vnd.ms-excel'
+            }
+            else if(ext == 'py') {
+                contentType = 'application/x-python-code'
+            }
+            else if(ext == 'js') {
+                contentType = 'application/javascript'
+            }
+            else if(ext == 'md') {
+                contentType = 'text/markdown'
+            }
+            else if(ext == 'png') {
+                contentType = 'image/png'
+            }
+            else if(ext == 'jpeg' || ext == 'jpg') {
+                contentType = 'image/jpeg'
+            }
+            console.log('contentType: ', contentType)
 
             let current = new Date();
             let datastr = getDate(current);
