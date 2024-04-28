@@ -65,30 +65,27 @@ def initiate_LLM():
 def general_conversation(query):
     prompt_template = """
     <|begin_of_text|>
-        <|start_header_id|>system<|end_header_id|>\n\nAlways answer without emojis in Korean<|eot_id|>
-        <|start_header_id|>user<|end_header_id|>\n\n"
-        History: {chat_history}
-        
-        Question: {question}
-        
-        Answer:"<|eot_id|>
+        <|start_header_id|>system<|end_header_id|>\n\n다음의 History는 User와 Assistant의 이전 대화입니다. History를 참조하여 Qustion에 대해 친절히 답변하세요. Always answer without emojis in Korean
+        History: {chat_history}<|eot_id|>
+        <|start_header_id|>user<|end_header_id|>\n\n"{text}"<|eot_id|>
         <|start_header_id|>assistant<|end_header_id|>\n\n"""
     
     PROMPT = PromptTemplate(
         template=prompt_template, 
-        input_variables=["chat_history", "question"]
+        input_variables=["chat_history", "text"]
     )
     
     history = memory_chain.load_memory_variables({})["chat_history"]
     print('memory_chain: ', history)
     
+    chat_history = get_chat_history(history)
+    print('chat_history: ', chat_history)
+    
     llm_chain = LLMChain(llm=llm, prompt=PROMPT)
     
-    msg = llm_chain({"question": query, "chat_history": history}, return_only_outputs=True)
+    msg = llm_chain({"text": query, "chat_history": chat_history}, return_only_outputs=True)
     
-    return msg['text']
-
-msg = general_conversation(text)    
+    return msg['text']  
 ```
 
 ### 대화 이력의 관리
