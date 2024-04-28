@@ -398,7 +398,7 @@ def general_conversation_with_chain(query):
     
     prompt = ChatPromptTemplate.from_messages([
         ("system", system), 
-        MessagesPlaceholder(variable_name="history"), 
+        MessagesPlaceholder(variable_name="history"),
         ("human", human)])
     print('prompt: ', prompt)
     
@@ -416,7 +416,7 @@ def general_conversation_with_chain(query):
         # msg = llm_chain({"text": query}, return_only_outputs=True)
         print('output: ', output)
         
-        msg = output.AI
+        msg = output
         print('msg: ', msg)
         
     except Exception:
