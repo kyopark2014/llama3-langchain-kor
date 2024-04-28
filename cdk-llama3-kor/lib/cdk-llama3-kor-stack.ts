@@ -410,6 +410,7 @@ export class CdkLlama3KorStack extends cdk.Stack {
       functionName: `lambda-chat-ws-for-${projectName}`,
       code: lambda.DockerImageCode.fromImageAsset(path.join(__dirname, '../../lambda-chat-ws')),
       timeout: cdk.Duration.seconds(300),
+      memorySize: 8192,
       role: roleLambdaWebsocket,
       environment: {
         bedrock_region: bedrock_region,
