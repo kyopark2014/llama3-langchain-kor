@@ -307,31 +307,6 @@ def sendErrorMessage(connectionId, requestId, msg):
     print('error: ', json.dumps(errorMsg))
     sendMessage(connectionId, errorMsg)    
 
-def get_summary(texts):    
-    prompt_template = """\n\nUser: 다음 텍스트를 요약해서 500자 이내의 한국어로 설명하세오.
-
-    {text}
-        
-    Assistant:"""
-    
-    PROMPT = PromptTemplate(template=prompt_template, input_variables=["text"])
-    chain = load_summarize_chain(llm, chain_type="stuff", prompt=PROMPT)
-
-    docs = [
-        Document(
-            page_content=t
-        ) for t in texts[:3]
-    ]
-    summary = chain.run(docs)
-    print('summary: ', summary)
-
-    if summary == '':  # error notification
-        summary = 'Fail to summarize the document. Try agan...'
-        return summary
-    else:
-        # return summary[1:len(summary)-1]   
-        return summary
-
 def load_chatHistory(userId, allowTime, chat_memory):
     dynamodb_client = boto3.client('dynamodb')
 
