@@ -176,6 +176,10 @@ memory_chain.chat_memory.add_ai_message(msg)
 
 ![image](https://github.com/kyopark2014/llama3-langchain-kor/assets/52392004/1ccb3146-ab6f-42eb-9b4a-cfac498615a2)
 
+작은 모델이라서 Hallucination은 피할수 없는것 같습니다. 사용 목적에 맞는 Prompt를 기반으로 RAG와 결합하여 보강해서 써야 할것 같습니다.
+
+![image](https://github.com/kyopark2014/llama3-langchain-kor/assets/52392004/5ffa2b84-7f36-45ae-b721-c4a6900279fb)
+
 
 ## 리소스 정리하기 
 
