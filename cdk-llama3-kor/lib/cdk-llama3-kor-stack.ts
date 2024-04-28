@@ -13,13 +13,14 @@ import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as apigatewayv2 from 'aws-cdk-lib/aws-apigatewayv2';
 
 const region = process.env.CDK_DEFAULT_REGION;    
+const accountId = process.env.CDK_DEFAULT_ACCOUNT;
 const debug = false;
 const stage = 'dev';
 const endpoint_name = 'jumpstart-dft-meta-textgeneration-llama-3-8b-instruct'
 const s3_prefix = 'docs';
-const projectName = `llama3-langchain-kor`; 
+const projectName = `llama3-langchain-kor`;  
 
-const bucketName = `storage-for-${projectName}-${region}`; 
+const bucketName = `storage-for-${projectName}-${accountId}-${region}`; 
 const bedrock_region = "us-east-1";  // "us-east-1" "us-west-2" 
 
 export class CdkLlama3KorStack extends cdk.Stack {
@@ -28,7 +29,7 @@ export class CdkLlama3KorStack extends cdk.Stack {
 
     // s3 
     const s3Bucket = new s3.Bucket(this, `storage-${projectName}`,{
-      //bucketName: bucketName,
+      bucketName: bucketName,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
