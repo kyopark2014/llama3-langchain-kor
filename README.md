@@ -1,7 +1,7 @@
 # Llama3와 LangChain을 이용하여 한국어 Chatbot 만들기
 
 <a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fkyopark2014%2Fllama3-langchain-kor&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false"/></a>
-<img alt="License" src="https://img.shields.io/badge/LICENSE-MIT-green">
+<img alt="License" src="https://img.shields.io/badge/license-Apache%202.0-blue?style=flat-square">
 
 여기서는 LLM으로 Llama3를 이용하여 한국어 Chatbot을 만드는 것을 설명합니다. 개발은 LangChain을 활용하였습니다. 전체적인 Architecture는 아래와 같습니다.
 
